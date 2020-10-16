@@ -8,34 +8,28 @@ function crearRiesgo(req, res) {
   let body = req.body;
 
   if (body.name && body.description && body.subRiesgos) {
+    let data = {
+      name: body.name,
+      description: body.description,
+      subRiesgos: body.subRiesgos,
+    };
     let fun = (dataBase) =>
-      dataBase.collection(collection).insertOne(
-        {
-          name: body.name,
-          description: body.description,
-          subRiesgos: body.subRiesgos,
-        },
-        (err, item) => {
-          if (err) throw err;
-          if (item.result.n > 0) {
-            res.status(201).send({
-              status: true,
-              data: {
-                name: body.name,
-                description: body.description,
-                subRiesgos: body.subRiesgos,
-              },
-              message: `Elemento agregado exitosamente`,
-            });
-          } else {
-            res.status(401).send({
-              status: false,
-              data: [],
-              message: `No se pudo crear el concepto, por favor intenta de nuevo`,
-            });
-          }
+      dataBase.collection(collection).insertOne(data, (err, item) => {
+        if (err) throw err;
+        if (item.result.n > 0) {
+          res.status(201).send({
+            status: true,
+            data,
+            message: `Elemento agregado exitosamente`,
+          });
+        } else {
+          res.status(401).send({
+            status: false,
+            data: [],
+            message: `No se pudo crear el concepto, por favor intenta de nuevo`,
+          });
         }
-      );
+      });
 
     if (isThereAnyConnection(client)) {
       const dataBase = client.db(DBName);

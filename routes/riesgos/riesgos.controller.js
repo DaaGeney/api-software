@@ -20,7 +20,11 @@ function crearRiesgo(req, res) {
           if (item.result.n > 0) {
             res.status(201).send({
               status: true,
-              data: item.data.ops,
+              data: {
+                name: body.name,
+                description: body.description,
+                subRiesgos: body.subRiesgos,
+              },
               message: `Elemento agregado exitosamente`,
             });
           } else {

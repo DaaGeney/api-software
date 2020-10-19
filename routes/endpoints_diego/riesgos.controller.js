@@ -58,18 +58,18 @@ function reportePerdidaEsperada(req, res) {
  * @param {Json} res argumento de respuesta
  */
 function crearRiesgoCredito(req, res) {
-  let { PD, EAD, LGD, impacto, probabilidad, otros } = req.body;
+  let { PD, EAD, LGD, impacto, registro, probabilidad, otros } = req.body;
   const { id } = req.params
   if (PD && EAD && LGD && probabilidad && impacto) {
     let fun = (dataBase) =>
       dataBase
         .collection(collection)
-        .insertOne({ id,  PD, EAD, LGD, probabilidad, impacto, otros }, (err, item) => {
+        .insertOne({ id,  PD, registro, EAD, LGD, probabilidad, impacto, otros }, (err, item) => {
           if (err) throw err;
           if (item.result.n > 0) {
             res.status(201).send({
               status: true,
-              data: { id,  PD, EAD, LGD, impacto, probabilidad },
+              data: { id,  PD, EAD, LGD, impacto, registro, probabilidad },
               message: `Riesgo creado correctamente`,
             });
           } else {

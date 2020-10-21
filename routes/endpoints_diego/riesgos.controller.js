@@ -58,46 +58,44 @@ function reportePerdidaEsperada(req, res) {
  * @param {Json} res argumento de respuesta
  */
 function crearRiesgoCredito(req, res) {
-  let { PD, EAD, LGD, impacto, registro, probabilidad, otros } = req.body;
+  const { PD, EAD, LGD, impacto, registro, probabilidad, otros } = req.body
   const { id } = req.params
-  if (PD && EAD && LGD && probabilidad && impacto) {
-    let fun = (dataBase) =>
-      dataBase
-        .collection(collection)
-        .insertOne({ id,  PD, registro, EAD, LGD, probabilidad, impacto, otros }, (err, item) => {
+  let fun = (DB) =>
+    DB
+      .collection(collection)
+      .updateOne({ id },
+        { $setOnInsert: { PD, registro, EAD, LGD, probabilidad, impacto, otros } },
+        { upsert: true },
+        (err, item) => {
           if (err) throw err;
-          if (item.result.n > 0) {
+          if (item.result.upserted) {
             res.status(201).send({
               status: true,
-              data: { id,  PD, EAD, LGD, impacto, registro, probabilidad },
-              message: `Riesgo creado correctamente`,
+              data: { id, PD, registro, EAD, LGD, probabilidad, impacto, otros },
+              message: "Riesgo creada correctamente",
             });
           } else {
-            res.status(401).send({
+            res.status(404).send({
               status: false,
               data: [],
-              message: `No se pudo crear el riesgo, por favor intenta de nuevo`,
+              message: "Riesgo existente",
             });
           }
-        });
-    if (isThereAnyConnection(client)) {
-      const dataBase = client.db(DBName);
-      fun(dataBase);
-    } else {
-      client.connect((err) => {
-        if (err) throw err;
-        const dataBase = client.db(DBName);
-        fun(dataBase);
-      });
-    }
+        }
+      );
+  if (isThereAnyConnection(client)) {
+    const DB = client.db(DBName);
+    fun(DB);
   } else {
-    res.status(400).send({
-      status: false,
-      data: [],
-      message: `Necesitas ingresar todos los campos requeridos`,
+    client.connect((err) => {
+      if (err) throw err;
+      const DB = client.db(DBName);
+      fun(DB);
     });
   }
+
 }
+
 
 
 module.exports = {

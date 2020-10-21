@@ -108,14 +108,20 @@ function eliminarPerdidaEsperada(req, res) {
     let fun = (dataBase) =>
       dataBase
         .collection(perdidaEsperada)
-        .deleteOne({ _id: ObjectID(id) }, (err, item) => {
-          if (err) throw err;
-          if (item.result.n > 0) {
-            myCache.set( 'PerdidaE',0, 1000 )
-            res.status(200).send({
-              status: true,
-              message: `Elemento eliminado`,
-            });
+        .updateOne(
+          { id },
+          { $set: { perdidaEsperada: 0} },
+          (err, item) => {
+            if (err) throw err;
+            if (item.result.n > 0) {
+              myCache.set( 'PerdidaE',0, 1000 )
+              res.status(200).send({
+                status: true,
+                data: {
+                  valor: pd * lgd * ead,
+                },
+                message: `Valor de la perdida esperada Eliminado`,
+              });
           } else {
             res.status(401).send({
               status: false,

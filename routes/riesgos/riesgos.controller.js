@@ -50,9 +50,14 @@ function crearRiesgo(req, res) {
   }
 }
 
+function checkString(id) {
+  const hex = /[0-9A-Fa-f]{6}/g;
+  return hex.test(id) 
+}
+
 function obtenerRiesgo(req, res) {
   let { id } = req.params;
-  if (id) {
+  if (id && checkString(id)) {
     let fun = (dataBase) =>
       dataBase
         .collection(collection)
@@ -87,7 +92,7 @@ function obtenerRiesgo(req, res) {
     res.status(400).send({
       status: false,
       data: [],
-      message: `No se pasaron los parametros necesarios`,
+      message: `No se pasaron los parametros o el parametro es incorrecto`,
     });
   }
 }
@@ -96,7 +101,7 @@ function modificarRiesgo(req, res) {
   let { id } = req.params;
   let body = req.body;
 
-  if (id && body.name && body.description && body.subRiesgos) {
+  if (id && body.name && body.description && body.subRiesgos && checkString(id)) {
     let fun = (dataBase) =>
       dataBase.collection(collection).updateOne(
         { _id: ObjectID(id) },
@@ -143,7 +148,7 @@ function modificarRiesgo(req, res) {
     res.status(400).send({
       status: false,
       data: [],
-      message: `No se pasaron los parametros necesarios`,
+      message: `No se pasaron los parametros necesarios o algún parametro es incorrecto`,
     });
   }
 }
@@ -151,7 +156,7 @@ function modificarRiesgo(req, res) {
 function eliminarRiesgo(req, res) {
   let { id } = req.params;
 
-  if (id) {
+  if (id && checkString(id)) {
     let fun = (dataBase) =>
       dataBase
         .collection(collection)
@@ -185,7 +190,7 @@ function eliminarRiesgo(req, res) {
     res.status(400).send({
       status: false,
       data: [],
-      message: `No se pasaron los parametros necesarios`,
+      message: `No se pasaron los parametros necesarios o el parametro es incorrecto`,
     });
   }
 }
@@ -242,7 +247,6 @@ function calcularPerdidaEsperada(req, res) {
 
 function obtenerValorPerdidaEsperada(req, res) {
   const { id } = req.params;
-
   if (id) {
     let fun = (dataBase) =>
       dataBase.collection(perdidaCollection).findOne({ id }, (err, item) => {

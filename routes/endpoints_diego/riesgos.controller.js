@@ -93,7 +93,6 @@ function crearRiesgoCredito(req, res) {
       fun(DB);
     });
   }
-
 }
 
 

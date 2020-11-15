@@ -1,7 +1,6 @@
 const { DBName, client } = require("../../config/mongo.config");
 const { isThereAnyConnection } = require("../../utils/helper");
 const { ObjectID } = require("mongodb");
-const collection = "riesgos";
 const perdidaCollection = "perdidaEsperada";
 const NodeCache = require( "node-cache" );
 const myCache = new NodeCache();

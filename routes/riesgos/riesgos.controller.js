@@ -52,7 +52,7 @@ function crearRiesgo(req, res) {
 
 function checkString(id) {
   const hex = /[0-9A-Fa-f]{6}/g;
-  return hex.test(id) 
+  return hex.test(id);
 }
 
 function obtenerRiesgo(req, res) {
@@ -97,11 +97,51 @@ function obtenerRiesgo(req, res) {
   }
 }
 
+function obtenerRiesgos(req, res) {
+  let fun = (dataBase) =>
+    dataBase
+      .collection(collection)
+      .find({})
+      .toArray((err, item) => {
+        if (err) throw err;
+        if (item) {
+          res.status(201).send({
+            status: true,
+            data: item,
+            message: `Elementos encontrados`,
+          });
+        } else {
+          res.status(404).send({
+            status: false,
+            data: [],
+            message: `No se encontraron los riesgos`,
+          });
+        }
+      });
+
+  if (isThereAnyConnection(client)) {
+    const dataBase = client.db(DBName);
+    fun(dataBase);
+  } else {
+    client.connect((err) => {
+      if (err) throw err;
+      const dataBase = client.db(DBName);
+      fun(dataBase);
+    });
+  }
+}
+
 function modificarRiesgo(req, res) {
   let { id } = req.params;
   let body = req.body;
 
-  if (id && body.name && body.description && body.subRiesgos && checkString(id)) {
+  if (
+    id &&
+    body.name &&
+    body.description &&
+    body.subRiesgos &&
+    checkString(id)
+  ) {
     let fun = (dataBase) =>
       dataBase.collection(collection).updateOne(
         { _id: ObjectID(id) },
@@ -118,6 +158,7 @@ function modificarRiesgo(req, res) {
             res.status(200).send({
               status: true,
               data: {
+                _id: ObjectID(id),
                 name: body.name,
                 description: body.description,
                 subRiesgos: body.subRiesgos,
@@ -155,7 +196,6 @@ function modificarRiesgo(req, res) {
 
 function eliminarRiesgo(req, res) {
   let { id } = req.params;
-
   if (id && checkString(id)) {
     let fun = (dataBase) =>
       dataBase
@@ -289,10 +329,11 @@ function obtenerValorPerdidaEsperada(req, res) {
 }
 
 module.exports = {
-  crearRiesgo,
-  obtenerRiesgo,
-  modificarRiesgo,
-  eliminarRiesgo,
   calcularPerdidaEsperada,
+  crearRiesgo,
+  eliminarRiesgo,
+  modificarRiesgo,
+  obtenerRiesgo,
+  obtenerRiesgos,
   obtenerValorPerdidaEsperada,
 };

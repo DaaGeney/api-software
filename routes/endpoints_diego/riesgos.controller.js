@@ -95,9 +95,42 @@ function crearRiesgoCredito(req, res) {
   }
 }
 
+function obtenerRiesgos(req, res) {
+  let fun = (dataBase) =>
+    dataBase
+      .collection(collection)
+      .find({})
+      .toArray((err, item) => {
+        if (err) throw err;
+        if (item) {
+          res.status(201).send({
+            status: true,
+            data: item,
+            message: `Elementos encontrados`,
+          });
+        } else {
+          res.status(404).send({
+            status: false,
+            data: [],
+            message: `No se encontraron los riesgos`,
+          });
+        }
+      });
 
+  if (isThereAnyConnection(client)) {
+    const dataBase = client.db(DBName);
+    fun(dataBase);
+  } else {
+    client.connect((err) => {
+      if (err) throw err;
+      const dataBase = client.db(DBName);
+      fun(dataBase);
+    });
+  }
+}
 
 module.exports = {
   reportePerdidaEsperada,
-  crearRiesgoCredito
+  crearRiesgoCredito,
+  obtenerRiesgos
 };

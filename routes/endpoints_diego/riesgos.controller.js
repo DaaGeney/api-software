@@ -58,20 +58,20 @@ function reportePerdidaEsperada(req, res) {
  * @param {Json} res argumento de respuesta
  */
 function crearRiesgoCredito(req, res) {
-  const { PD, EAD, LGD, impacto, registro, probabilidad, otros } = req.body
+  const { name, PD, EAD, LGD, impacto, registro, probabilidad, otros } = req.body
   const { id } = req.params
   let fun = (DB) =>
     DB
       .collection(collection)
       .updateOne({ id },
-        { $setOnInsert: { PD, registro, EAD, LGD, probabilidad, impacto, otros } },
+        { $setOnInsert: { name, PD, registro, EAD, LGD, probabilidad, impacto, otros } },
         { upsert: true },
         (err, item) => {
           if (err) throw err;
           if (item.result.upserted) {
             res.status(201).send({
               status: true,
-              data: { id, PD, registro, EAD, LGD, probabilidad, impacto, otros },
+              data: { id, name, PD, registro, EAD, LGD, probabilidad, impacto, otros },
               message: "Riesgo creada correctamente",
             });
           } else {

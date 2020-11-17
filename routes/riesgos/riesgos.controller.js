@@ -238,7 +238,7 @@ function eliminarRiesgo(req, res) {
 function calcularPerdidaEsperada(req, res) {
   const { pd, lgd, ead } = req.body;
   const { id } = req.params;
-
+  
   if (pd && lgd && ead && id) {
     let fun = (dataBase) =>
       dataBase

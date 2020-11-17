@@ -1,9 +1,7 @@
 const { DBName, client } = require("../../config/mongo.config");
 const { isThereAnyConnection } = require("../../utils/helper");
-const collection = "riesgosCredito"
-const collection2 = "perdidaEsperada"
-
-
+const collection = "riesgosCredito";
+const collection2 = "perdidaEsperada";
 
 /**
  * Obtiene el reporte de la perdida esperada de una entidad.
@@ -14,24 +12,22 @@ function reportePerdidaEsperada(req, res) {
   let { id } = req.params;
   if (id) {
     let fun = (dataBase) =>
-      dataBase
-        .collection(collection2)
-        .findOne({ id }, (err, item) => {
-          if (err) throw err;
-          if (item) {
-            res.status(200).send({
-              status: true,
-              data: item,
-              message: `reporte de la entidad ${id}`,
-            });
-          } else {
-            res.status(400).send({
-              status: false,
-              data: [],
-              message: `No existe registro de perdida esperada para la entidad ${id}`,
-            });
-          }
-        })
+      dataBase.collection(collection2).findOne({ id }, (err, item) => {
+        if (err) throw err;
+        if (item) {
+          res.status(200).send({
+            status: true,
+            data: item,
+            message: `reporte de la entidad ${id}`,
+          });
+        } else {
+          res.status(400).send({
+            status: false,
+            data: [],
+            message: `No existe registro de perdida esperada para la entidad ${id}`,
+          });
+        }
+      });
 
     if (isThereAnyConnection(client)) {
       const dataBase = client.db(DBName);
@@ -58,31 +54,53 @@ function reportePerdidaEsperada(req, res) {
  * @param {Json} res argumento de respuesta
  */
 function crearRiesgoCredito(req, res) {
-  const { name, PD, EAD, LGD, impacto, registro, probabilidad, otros } = req.body
-  const { id } = req.params
+  const {
+    name,
+    PD,
+    EAD,
+    LGD,
+    impacto,
+    registro,
+    probabilidad,
+    otros,
+  } = req.body;
+  const { id } = req.params;
+  let bodyInsert = {
+    id,
+    name,
+    PD,
+    registro,
+    EAD,
+    LGD,
+    probabilidad,
+    impacto,
+    otros,
+  };
+
   let fun = (DB) =>
-    DB
-      .collection(collection)
-      .updateOne({ id },
-        { $setOnInsert: { name, PD, registro, EAD, LGD, probabilidad, impacto, otros } },
-        { upsert: true },
-        (err, item) => {
-          if (err) throw err;
-          if (item.result.upserted) {
-            res.status(201).send({
-              status: true,
-              data: { id, name, PD, registro, EAD, LGD, probabilidad, impacto, otros },
-              message: "Riesgo creada correctamente",
-            });
-          } else {
-            res.status(404).send({
-              status: false,
-              data: [],
-              message: "Riesgo existente",
-            });
-          }
+    DB.collection(collection).updateOne(
+      { name },
+      {
+        $setOnInsert: bodyInsert,
+      },
+      { upsert: true },
+      (err, item) => {
+        if (err) throw err;
+        if (item.result.upserted) {
+          res.status(201).send({
+            status: true,
+            data: bodyInsert,
+            message: "Riesgo creada correctamente",
+          });
+        } else {
+          res.status(404).send({
+            status: false,
+            data: [],
+            message: "Riesgo existente",
+          });
         }
-      );
+      }
+    );
   if (isThereAnyConnection(client)) {
     const DB = client.db(DBName);
     fun(DB);
@@ -132,5 +150,5 @@ function obtenerRiesgos(req, res) {
 module.exports = {
   reportePerdidaEsperada,
   crearRiesgoCredito,
-  obtenerRiesgos
+  obtenerRiesgos,
 };

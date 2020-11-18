@@ -6,22 +6,25 @@ function obtenerRegistros(req, res) {
   const { id } = req.params;
   if (id) {
     let fun = (dataBase) =>
-      dataBase.collection(collection).findOne({ id }, (err, item) => {
-        if (err) throw err;
-        if (item) {
-          res.status(200).send({
-            status: true,
-            data: item.registro,
-            message: "Registros encontrados",
-          });
-        } else {
-          res.status(400).send({
-            status: false,
-            data: [],
-            message: `No se encuentra el concepto ${id}`,
-          });
-        }
-      });
+      dataBase
+        .collection(collection)
+        .find({ id })
+        .toArray((err, item) => {
+          if (err) throw err;
+          if (item) {
+            res.status(200).send({
+              status: true,
+              data: item,
+              message: "Registros encontrados",
+            });
+          } else {
+            res.status(400).send({
+              status: false,
+              data: [],
+              message: `No se encuentra el concepto ${id}`,
+            });
+          }
+        });
     if (isThereAnyConnection(client)) {
       const dataBase = client.db(DBName);
       fun(dataBase);
@@ -47,7 +50,7 @@ function generarMapa(req, res) {
     let fun = (dataBase) =>
       dataBase
         .collection(collection)
-        .find({ id })
+        .find({ name: id })
         .toArray((err, item) => {
           if (err) throw err;
           if (item.length > 0) {

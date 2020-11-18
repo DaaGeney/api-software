@@ -7,10 +7,11 @@ const perdidaCollection = "perdidaEsperada";
 function crearRiesgo(req, res) {
   let body = req.body;
 
-  if (body.name && body.description && body.subRiesgos) {
+  if (body.name && body.description && body.subRiesgos && body.company) {
     let data = {
-      name: body.name,
+      company: body.company,
       description: body.description,
+      name: body.name,
       subRiesgos: body.subRiesgos,
     };
     let fun = (dataBase) =>
@@ -98,35 +99,45 @@ function obtenerRiesgo(req, res) {
 }
 
 function obtenerRiesgos(req, res) {
-  let fun = (dataBase) =>
-    dataBase
-      .collection(collection)
-      .find({})
-      .toArray((err, item) => {
-        if (err) throw err;
-        if (item) {
-          res.status(201).send({
-            status: true,
-            data: item,
-            message: `Elementos encontrados`,
-          });
-        } else {
-          res.status(404).send({
-            status: false,
-            data: [],
-            message: `No se encontraron los riesgos`,
-          });
-        }
-      });
+  const { company } = req.params;
 
-  if (isThereAnyConnection(client)) {
-    const dataBase = client.db(DBName);
-    fun(dataBase);
-  } else {
-    client.connect((err) => {
-      if (err) throw err;
+  if (company) {
+    let fun = (dataBase) =>
+      dataBase
+        .collection(collection)
+        .find({})
+        .toArray((err, item) => {
+          if (err) throw err;
+          if (item) {
+            res.status(201).send({
+              status: true,
+              data: item,
+              message: `Elementos encontrados`,
+            });
+          } else {
+            res.status(404).send({
+              status: false,
+              data: [],
+              message: `No se encontraron los riesgos`,
+            });
+          }
+        });
+
+    if (isThereAnyConnection(client)) {
       const dataBase = client.db(DBName);
       fun(dataBase);
+    } else {
+      client.connect((err) => {
+        if (err) throw err;
+        const dataBase = client.db(DBName);
+        fun(dataBase);
+      });
+    }
+  } else {
+    res.status(401).send({
+      status: false,
+      data: [],
+      message: `No se encontraron los riesgos`,
     });
   }
 }
@@ -238,7 +249,7 @@ function eliminarRiesgo(req, res) {
 function calcularPerdidaEsperada(req, res) {
   const { pd, lgd, ead } = req.body;
   const { id } = req.params;
-  
+
   if (pd && lgd && ead && id) {
     let fun = (dataBase) =>
       dataBase
